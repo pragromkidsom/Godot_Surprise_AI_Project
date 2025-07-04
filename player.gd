@@ -1,18 +1,31 @@
 extends CharacterBody3D
 
-@export var player: NodePath
-var speed = 2.5
+@export var speed = 5.0
+@export var gravity = -9.8
+@export var jump_velocity = 5.0
+
+var velocity = Vector3.ZERO
 
 func _physics_process(delta):
-	if player == null:
-		return
-	var target = get_node(player)
-	if target == null:
-		return
+    var input_dir = Vector3.ZERO
 
-	var direction = (target.global_transform.origin - global_transform.origin)
-	direction.y = 0
-	direction = direction.normalized()
+    if Input.is_action_pressed("ui_up"):
+        input_dir.z -= 1
+    if Input.is_action_pressed("ui_down"):
+        input_dir.z += 1
+    if Input.is_action_pressed("ui_left"):
+        input_dir.x -= 1
+    if Input.is_action_pressed("ui_right"):
+        input_dir.x += 1
 
-	velocity = direction * speed
-	move_and_slide()
+    input_dir = input_dir.normalized()
+
+    velocity.x = input_dir.x * speed
+    velocity.z = input_dir.z * speed
+
+    velocity.y += gravity * delta
+
+    if is_on_floor() and Input.is_action_just_pressed("ui_accept"):
+        velocity.y = jump_velocity
+
+    velocity = move_and_slide(velocity, Vector3.UP)
