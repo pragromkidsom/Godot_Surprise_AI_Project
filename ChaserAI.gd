@@ -1,18 +1,23 @@
 extends CharacterBody3D
 
-@export var player: NodePath
-var speed = 2.5
+@export var speed = 4.0
+@export var chase_distance = 15.0
+
+var player = null
+var velocity = Vector3.ZERO
+
+func _ready():
+    player = get_node_or_null("/root/Main/Player")  # Adjust this path to your player node
 
 func _physics_process(delta):
-	if player == null:
-		return
-	var target = get_node(player)
-	if target == null:
-		return
+    if player == null:
+        return
 
-	var direction = (target.global_transform.origin - global_transform.origin)
-	direction.y = 0
-	direction = direction.normalized()
+    var distance = global_transform.origin.distance_to(player.global_transform.origin)
+    if distance < chase_distance:
+        var dir = (player.global_transform.origin - global_transform.origin).normalized()
+        velocity = dir * speed
+    else:
+        velocity = Vector3.ZERO
 
-	velocity = direction * speed
-	move_and_slide()
+    velocity = move_and_slide(velocity, Vector3.UP)
